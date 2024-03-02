@@ -4,6 +4,7 @@ import { serialize } from 'v8';
 
 const INPUT_PATH = './input.txt';
 const OUTPUT_PATH = './output.txt';
+const TMP_PATH = './tmp';
 const BLOCK_SIZE = 100;
 const DELIMITER = '\n';
 
@@ -25,20 +26,28 @@ const sortTextBlock = (input: string[]) =>
 
 const main = async () => {
   const rs = fs.createReadStream(INPUT_PATH);
-  const ws = fs.createWriteStream(OUTPUT_PATH);
+
+  try {
+    await fs.promises.stat(TMP_PATH);
+  } catch (error) {
+    await fs.promises.mkdir(TMP_PATH, { recursive: true });
+  }
 
   let block = [];
+  let blockCount = 0;
 
   const rl = readline.createInterface({ input: rs, crlfDelay: Infinity });
   for await (const line of rl) {
     block.push(line);
     const blockSize = serialize(block).byteLength;
     if (blockSize >= BLOCK_SIZE) {
+      const ws = fs.createWriteStream(`${TMP_PATH}/block-${blockCount}`);
       ws.write(sortTextBlock(block).join(DELIMITER) + DELIMITER);
       block = [];
+      blockCount++;
+      ws.close();
     }
   }
-  ws.write(sortTextBlock(block).join(DELIMITER));
 };
 
 main();
