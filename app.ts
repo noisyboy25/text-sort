@@ -48,6 +48,9 @@ const main = async () => {
       ws.close();
     }
   }
+  const ws = fs.createWriteStream(`${TMP_PATH}/block-${blockCount}`);
+  ws.write(sortTextBlock(block).join(DELIMITER) + DELIMITER);
+  ws.close();
 };
 
 main();
