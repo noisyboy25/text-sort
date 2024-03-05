@@ -2,7 +2,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 const INPUT_PATH = './input.txt';
-const MAX_SIZE = 1024 * 1024;
+const MAX_SIZE = 1024;
 const LINE_SIZE = 16;
 const DELIMITER = '\n';
 
