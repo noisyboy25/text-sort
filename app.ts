@@ -40,8 +40,11 @@ const loadBlock = async (blockName: string) => {
   return readline.createInterface({ input: rs, crlfDelay: Infinity });
 };
 
-const getAsyncIterator = (block: readline.Interface) => {
-  return block[Symbol.asyncIterator]();
+const getAsyncIterator = (block: readline.Interface) =>
+  block[Symbol.asyncIterator]();
+
+const getNextValue = async (block: AsyncIterableIterator<string>) => {
+  return ((await block.next()).value || '') as string;
 };
 
 const mergeBlocks = async () => {
@@ -49,37 +52,37 @@ const mergeBlocks = async () => {
 
   while (dir.length > 1) {
     for (let i = 0; i < dir.length - 1; i = i + 2) {
-      const blockName = `${dir[i]}-${dir.length - 1}`;
+      const blockName = `${dir.length - 1}-${i}`;
       console.log(blockName);
 
       const ws = fs.createWriteStream(path.resolve(TMP_DIR, blockName));
       const blockA = getAsyncIterator(await loadBlock(dir[i]));
       const blockB = getAsyncIterator(await loadBlock(dir[i + 1]));
-      let lineA: string = (await blockA.next()).value || '';
-      let lineB: string = (await blockB.next()).value || '';
+      let lineA: string = await getNextValue(blockA);
+      let lineB: string = await getNextValue(blockB);
 
       while (lineA && lineB) {
         if (lineA.localeCompare(lineB) <= 0) {
           ws.write(lineA);
           ws.write(DELIMITER);
-          lineA = (await blockA.next()).value || '';
+          lineA = await getNextValue(blockA);
         } else {
           ws.write(lineB);
           ws.write(DELIMITER);
-          lineB = (await blockB.next()).value || '';
+          lineB = await getNextValue(blockB);
         }
       }
 
       while (lineA) {
         ws.write(lineA);
         ws.write(DELIMITER);
-        lineA = (await blockA.next()).value || '';
+        lineA = await getNextValue(blockA);
       }
 
       while (lineB) {
         ws.write(lineB);
         ws.write(DELIMITER);
-        lineB = (await blockB.next()).value || '';
+        lineB = await getNextValue(blockB);
       }
 
       ws.close();
