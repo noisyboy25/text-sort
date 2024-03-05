@@ -12,7 +12,7 @@ const generateRandString = () =>
 const ws = fs.createWriteStream(INPUT_PATH);
 let size = 0;
 while (size <= MAX_SIZE) {
-  ws.write(generateRandString() + DELIMITER);
+  ws.write(generateRandString());
+  ws.write(DELIMITER);
   size += LINE_SIZE + 1;
 }
-ws.write(generateRandString());
